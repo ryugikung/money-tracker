@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Minty — personal money tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ============ AUTH SCREEN ============ -->
+<div id="auth-screen" class="auth-screen">
+  <div class="auth-card">
+    <div class="auth-mark">Minty</div>
+    <p class="auth-tagline">A quiet place to keep track of money.</p>
+
+    <form id="auth-form" class="auth-form">
+      <label class="field">
+        <span>Email</span>
+        <input type="email" id="auth-email" required autocomplete="email" />
+      </label>
+      <label class="field">
+        <span>Password</span>
+        <input type="password" id="auth-password" required autocomplete="current-password" minlength="6" />
+      </label>
+      <p id="auth-error" class="auth-error" hidden></p>
+      <button type="submit" id="auth-submit" class="btn btn-primary btn-block">Sign in</button>
+    </form>
+
+    <button id="auth-toggle" class="auth-toggle">Need an account? Sign up</button>
+  </div>
+</div>
+
+<!-- ============ APP SHELL ============ -->
+<div id="app" class="app" hidden>
+
+  <nav class="sidebar">
+    <div class="sidebar-mark">Minty</div>
+    <ul class="nav-list">
+      <li><button class="nav-item is-active" data-view="dashboard"><span class="nav-dot"></span>Dashboard</button></li>
+      <li><button class="nav-item" data-view="calendar"><span class="nav-dot"></span>Calendar</button></li>
+      <li><button class="nav-item" data-view="transactions"><span class="nav-dot"></span>Transactions</button></li>
+      <li><button class="nav-item" data-view="analytics"><span class="nav-dot"></span>Analytics</button></li>
+      <li><button class="nav-item" data-view="categories"><span class="nav-dot"></span>Categories</button></li>
+      <li><button class="nav-item" data-view="settings"><span class="nav-dot"></span>Settings</button></li>
+    </ul>
+    <button id="sign-out" class="sign-out">Sign out</button>
+  </nav>
+
+  <div class="mobile-tabbar">
+    <button class="nav-item is-active" data-view="dashboard">Home</button>
+    <button class="nav-item" data-view="calendar">Calendar</button>
+    <button class="nav-item" data-view="transactions">List</button>
+    <button class="nav-item" data-view="analytics">Charts</button>
+    <button class="nav-item" data-view="settings">More</button>
+  </div>
+
+  <main class="main">
+
+    <!-- ---------- DASHBOARD ---------- -->
+    <section id="view-dashboard" class="view is-active">
+      <header class="view-header">
+        <div>
+          <p class="eyebrow-plain">This month</p>
+          <h1 id="dash-month-label" class="view-title">—</h1>
+        </div>
+        <button class="btn btn-primary" data-action="open-add-transaction">Add transaction</button>
+      </header>
+
+      <div class="hero-balance">
+        <p class="hero-label">Balance</p>
+        <p id="hero-balance-amount" class="hero-amount">฿0.00</p>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-card stat-income">
+          <p class="stat-label">Income</p>
+          <p id="stat-income" class="stat-value">฿0.00</p>
+        </div>
+        <div class="stat-card stat-expense">
+          <p class="stat-label">Expenses</p>
+          <p id="stat-expense" class="stat-value">฿0.00</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Transactions</p>
+          <p id="stat-count" class="stat-value">0</p>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>By category</h2>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="dash-chart" width="260" height="260"></canvas>
+            <p id="dash-chart-empty" class="empty-note" hidden>Nothing to show yet — add a transaction to see it here.</p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Recent</h2>
+            <button class="link-btn" data-view-link="transactions">See all</button>
+          </div>
+          <ul id="dash-recent-list" class="tx-list"></ul>
+          <p id="dash-recent-empty" class="empty-note" hidden>No transactions yet. Your first one goes here.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- CALENDAR ---------- -->
+    <section id="view-calendar" class="view">
+      <header class="view-header">
+        <div>
+          <p class="eyebrow-plain">Calendar</p>
+          <h1 class="view-title">Month overview</h1>
+        </div>
+        <div class="month-nav">
+          <button class="icon-btn" id="cal-prev" aria-label="Previous month">‹</button>
+          <span id="cal-month-label" class="month-label">—</span>
+          <button class="icon-btn" id="cal-next" aria-label="Next month">›</button>
+        </div>
+      </header>
+      <div class="panel">
+        <div class="calendar-weekdays">
+          <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+        </div>
+        <div id="calendar-grid" class="calendar-grid"></div>
+      </div>
+
+      <div class="panel" id="cal-day-panel" hidden>
+        <div class="panel-header">
+          <h2 id="cal-day-title">—</h2>
+          <button class="btn btn-secondary btn-sm" id="cal-day-add">Add here</button>
+        </div>
+        <ul id="cal-day-list" class="tx-list"></ul>
+      </div>
+    </section>
+
+    <!-- ---------- TRANSACTIONS ---------- -->
+    <section id="view-transactions" class="view">
+      <header class="view-header">
+        <div>
+          <p class="eyebrow-plain">All records</p>
+          <h1 class="view-title">Transactions</h1>
+        </div>
+        <button class="btn btn-primary" data-action="open-add-transaction">Add transaction</button>
+      </header>
+
+      <div class="filter-row">
+        <input type="search" id="tx-search" class="search-input" placeholder="Search notes and categories…" />
+        <div class="segmented" id="tx-type-filter">
+          <button class="segmented-btn is-active" data-type="all">All</button>
+          <button class="segmented-btn" data-type="income">Income</button>
+          <button class="segmented-btn" data-type="expense">Expense</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <ul id="tx-full-list" class="tx-list"></ul>
+        <p id="tx-full-empty" class="empty-note" hidden>No transactions match. Try a different search or filter.</p>
+      </div>
+    </section>
+
+    <!-- ---------- ANALYTICS ---------- -->
+    <section id="view-analytics" class="view">
+      <header class="view-header">
+        <div>
+          <p class="eyebrow-plain">Patterns</p>
+          <h1 class="view-title">Analytics</h1>
+        </div>
+        <div class="segmented" id="an-range-filter">
+          <button class="segmented-btn is-active" data-range="month">This month</button>
+          <button class="segmented-btn" data-range="year">This year</button>
+          <button class="segmented-btn" data-range="all">All time</button>
+        </div>
+      </header>
+
+      <div class="dash-grid">
+        <div class="panel">
+          <div class="panel-header"><h2>Expenses by category</h2></div>
+          <div class="chart-wrap">
+            <canvas id="an-expense-chart" width="260" height="260"></canvas>
+            <p id="an-expense-empty" class="empty-note" hidden>No expenses in this range yet.</p>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><h2>Income by category</h2></div>
+          <div class="chart-wrap">
+            <canvas id="an-income-chart" width="260" height="260"></canvas>
+            <p id="an-income-empty" class="empty-note" hidden>No income in this range yet.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><h2>Category breakdown</h2></div>
+        <ul id="an-breakdown-list" class="breakdown-list"></ul>
+      </div>
+    </section>
+
+    <!-- ---------- CATEGORIES ---------- -->
+    <section id="view-categories" class="view">
+      <header class="view-header">
+        <div>
+          <p class="eyebrow-plain">Organize</p>
+          <h1 class="view-title">Categories</h1>
+        </div>
+        <button class="btn btn-primary" data-action="open-add-category">New category</button>
+      </header>
+
+      <div class="dash-grid">
+        <div class="panel">
+          <div class="panel-header"><h2>Income</h2></div>
+          <ul id="cat-income-list" class="category-list"></ul>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><h2>Expense</h2></div>
+          <ul id="cat-expense-list" class="category-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- SETTINGS ---------- -->
+    <section id="view-settings" class="view">
+      <header class="view-header">
+        <div>
+          <p class="eyebrow-plain">Preferences</p>
+          <h1 class="view-title">Settings</h1>
+        </div>
+      </header>
+
+      <div class="panel">
+        <div class="panel-header"><h2>Appearance</h2></div>
+        <div class="theme-grid" id="theme-grid">
+          <button class="theme-swatch" data-theme="clean-light">
+            <span class="swatch" style="background:#FAFAF8;border:1px solid #E4E1D8"></span>Clean Light
+          </button>
+          <button class="theme-swatch" data-theme="clean-dark">
+            <span class="swatch" style="background:#171716"></span>Clean Dark
+          </button>
+          <button class="theme-swatch" data-theme="lavender-milk">
+            <span class="swatch" style="background:#F1ECFA"></span>Lavender Milk
+          </button>
+          <button class="theme-swatch" data-theme="peach-soda">
+            <span class="swatch" style="background:#FFEFE2"></span>Peach Soda
+          </button>
+          <button class="theme-swatch" data-theme="mint-cloud">
+            <span class="swatch" style="background:#E8F7EF"></span>Mint Cloud
+          </button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><h2>Account</h2></div>
+        <p id="settings-email" class="muted-text">—</p>
+        <button class="btn btn-secondary" id="settings-sign-out">Sign out</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============ TRANSACTION MODAL ============ -->
+<div id="tx-modal" class="modal-backdrop" hidden>
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="tx-modal-title">Add transaction</h2>
+      <button class="icon-btn" data-action="close-modal">×</button>
+    </div>
+    <form id="tx-form" class="modal-form">
+      <input type="hidden" id="tx-id" />
+      <div class="segmented segmented-full" id="tx-form-type">
+        <button type="button" class="segmented-btn is-active" data-type="expense">Expense</button>
+        <button type="button" class="segmented-btn" data-type="income">Income</button>
+      </div>
+
+      <label class="field">
+        <span>Amount</span>
+        <input type="number" id="tx-amount" step="0.01" min="0" required placeholder="0.00" />
+      </label>
+
+      <label class="field">
+        <span>Category</span>
+        <select id="tx-category" required></select>
+      </label>
+
+      <div class="field-row">
+        <label class="field">
+          <span>Date</span>
+          <input type="date" id="tx-date" required />
+        </label>
+        <label class="field">
+          <span>Time</span>
+          <input type="time" id="tx-time" required />
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Note (optional)</span>
+        <input type="text" id="tx-note" placeholder="What was this for?" maxlength="140" />
+      </label>
+
+      <div class="modal-actions">
+        <button type="button" id="tx-delete" class="btn btn-danger" hidden>Delete</button>
+        <div class="modal-actions-right">
+          <button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ CATEGORY MODAL ============ -->
+<div id="cat-modal" class="modal-backdrop" hidden>
+  <div class="modal modal-narrow">
+    <div class="modal-header">
+      <h2>New category</h2>
+      <button class="icon-btn" data-action="close-cat-modal">×</button>
+    </div>
+    <form id="cat-form" class="modal-form">
+      <div class="segmented segmented-full" id="cat-form-type">
+        <button type="button" class="segmented-btn is-active" data-type="expense">Expense</button>
+        <button type="button" class="segmented-btn" data-type="income">Income</button>
+      </div>
+      <label class="field">
+        <span>Name</span>
+        <input type="text" id="cat-name" required maxlength="40" placeholder="e.g. Groceries" />
+      </label>
+      <label class="field">
+        <span>Color</span>
+        <div class="color-swatches" id="cat-color-swatches"></div>
+      </label>
+      <div class="modal-actions">
+        <div class="modal-actions-right">
+          <button type="button" class="btn btn-secondary" data-action="close-cat-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save category</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
