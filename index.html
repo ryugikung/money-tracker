@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f7f5ff" />
+  <title>Minty — Income & Expense Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <section id="authScreen" class="auth-screen">
+    <div class="auth-card">
+      <div class="brand-lockup">
+        <div class="brand-mark">M</div>
+        <div>
+          <h1>Minty</h1>
+          <p>Money, made easier to see.</p>
+        </div>
+      </div>
+
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab active" data-auth-mode="signin">Sign in</button>
+        <button class="auth-tab" data-auth-mode="signup">Create account</button>
+      </div>
+
+      <form id="authForm" class="auth-form">
+        <label>
+          <span>Email</span>
+          <input id="authEmail" type="email" required autocomplete="email" placeholder="you@example.com" />
+        </label>
+        <label>
+          <span>Password</span>
+          <input id="authPassword" type="password" required minlength="6" autocomplete="current-password" placeholder="At least 6 characters" />
+        </label>
+        <button id="authSubmit" class="btn btn-primary btn-wide" type="submit">Sign in</button>
+      </form>
+      <p id="authHint" class="helper">Your data is stored in Supabase and protected with Row Level Security.</p>
+    </div>
+  </section>
+
+  <div id="app" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="brand-lockup compact">
+          <div class="brand-mark">M</div>
+          <div>
+            <h1>Minty</h1>
+            <p>Money tracker</p>
+          </div>
+        </div>
+
+        <nav class="nav-list">
+          <button class="nav-item active" data-view="overview"><span>⌂</span> Overview</button>
+          <button class="nav-item" data-view="transactions"><span>↕</span> Transactions</button>
+          <button class="nav-item" data-view="calendar"><span>□</span> Calendar</button>
+          <button class="nav-item" data-view="categories"><span>◌</span> Categories</button>
+        </nav>
+      </div>
+
+      <div class="sidebar-bottom">
+        <button id="themeButton" class="nav-item"><span>✦</span> Appearance</button>
+        <button id="signOutButton" class="nav-item danger"><span>↪</span> Sign out</button>
+        <div class="user-chip">
+          <div class="avatar" id="avatar">U</div>
+          <div class="user-meta">
+            <strong id="userEmail">—</strong>
+            <small>Private workspace</small>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Personal finance</p>
+          <h2 id="viewTitle">Overview</h2>
+        </div>
+        <div class="topbar-actions">
+          <button id="mobileMenuButton" class="icon-btn mobile-only" aria-label="Open menu">☰</button>
+          <button id="addTransactionButton" class="btn btn-primary">+ Add transaction</button>
+        </div>
+      </header>
+
+      <section id="overviewView" class="view active-view">
+        <div class="period-toolbar card soft-card">
+          <div class="segmented" id="periodMode">
+            <button data-period="day">Day</button>
+            <button class="active" data-period="month">Month</button>
+            <button data-period="year">Year</button>
+          </div>
+          <div class="period-nav">
+            <button id="periodPrev" class="icon-btn" aria-label="Previous period">←</button>
+            <button id="periodLabel" class="period-label">—</button>
+            <button id="periodNext" class="icon-btn" aria-label="Next period">→</button>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card card">
+            <span class="stat-label">Balance</span>
+            <strong id="balanceStat">฿0.00</strong>
+            <span class="stat-note">Income − expenses</span>
+          </article>
+          <article class="stat-card card">
+            <span class="stat-label">Income</span>
+            <strong id="incomeStat">฿0.00</strong>
+            <span class="stat-note positive">Money in</span>
+          </article>
+          <article class="stat-card card">
+            <span class="stat-label">Expenses</span>
+            <strong id="expenseStat">฿0.00</strong>
+            <span class="stat-note negative">Money out</span>
+          </article>
+          <article class="stat-card card">
+            <span class="stat-label">Transactions</span>
+            <strong id="countStat">0</strong>
+            <span class="stat-note">This period</span>
+          </article>
+        </div>
+
+        <div class="dashboard-grid">
+          <article class="card chart-card">
+            <div class="card-head">
+              <div><p class="eyebrow">Spending</p><h3>Expenses by category</h3></div>
+              <span id="expenseTotalPill" class="pill">฿0</span>
+            </div>
+            <div class="chart-wrap"><canvas id="expenseChart"></canvas></div>
+            <div id="chartEmpty" class="empty-state hidden">Add an expense to see your spending breakdown.</div>
+          </article>
+
+          <article class="card recent-card">
+            <div class="card-head">
+              <div><p class="eyebrow">Latest</p><h3>Recent transactions</h3></div>
+              <button class="text-btn" data-jump="transactions">See all</button>
+            </div>
+            <div id="recentTransactions" class="transaction-list"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="transactionsView" class="view">
+        <article class="card">
+          <div class="card-head stack-mobile">
+            <div><p class="eyebrow">Ledger</p><h3>All transactions</h3></div>
+            <div class="filters">
+              <input id="searchTransactions" type="search" placeholder="Search notes or category" />
+              <select id="transactionTypeFilter"><option value="all">All types</option><option value="income">Income</option><option value="expense">Expense</option></select>
+            </div>
+          </div>
+          <div id="allTransactions" class="transaction-list large"></div>
+        </article>
+      </section>
+
+      <section id="calendarView" class="view">
+        <article class="card">
+          <div class="calendar-head">
+            <button id="calPrev" class="icon-btn">←</button>
+            <h3 id="calendarTitle">—</h3>
+            <button id="calNext" class="icon-btn">→</button>
+          </div>
+          <div class="calendar-weekdays"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+          <div id="calendarGrid" class="calendar-grid"></div>
+        </article>
+      </section>
+
+      <section id="categoriesView" class="view">
+        <div class="category-layout">
+          <article class="card">
+            <div class="card-head"><div><p class="eyebrow">Customize</p><h3>Your categories</h3></div></div>
+            <div id="categoryList" class="category-list"></div>
+          </article>
+          <article class="card category-form-card">
+            <div class="card-head"><div><p class="eyebrow">New</p><h3>Add a category</h3></div></div>
+            <form id="categoryForm" class="form-grid one-col">
+              <label><span>Name</span><input id="categoryName" maxlength="40" required placeholder="e.g. Skincare" /></label>
+              <label><span>Type</span><select id="categoryType"><option value="expense">Expense</option><option value="income">Income</option></select></label>
+              <label><span>Color</span><input id="categoryColor" type="color" value="#a78bfa" /></label>
+              <button class="btn btn-primary" type="submit">Add category</button>
+            </form>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="transactionDialog" class="modal">
+    <form id="transactionForm" method="dialog" class="modal-card">
+      <div class="modal-head">
+        <div><p class="eyebrow">Money movement</p><h3 id="transactionModalTitle">Add transaction</h3></div>
+        <button id="closeTransactionDialog" class="icon-btn" type="button">×</button>
+      </div>
+      <input id="transactionId" type="hidden" />
+      <div class="type-toggle" id="transactionTypeToggle">
+        <button type="button" class="active expense" data-type="expense">Expense</button>
+        <button type="button" data-type="income">Income</button>
+      </div>
+      <div class="form-grid">
+        <label class="full"><span>Amount (THB)</span><input id="transactionAmount" type="number" step="0.01" min="0.01" required placeholder="0.00" /></label>
+        <label><span>Date</span><input id="transactionDate" type="date" required /></label>
+        <label><span>Time</span><input id="transactionTime" type="time" required /></label>
+        <label class="full"><span>Category</span><select id="transactionCategory" required></select></label>
+        <label class="full"><span>Note</span><input id="transactionNote" maxlength="120" placeholder="Optional note" /></label>
+      </div>
+      <div class="modal-actions">
+        <button id="deleteTransactionButton" class="btn btn-danger hidden" type="button">Delete</button>
+        <span></span>
+        <button id="cancelTransactionButton" class="btn btn-ghost" type="button">Cancel</button>
+        <button class="btn btn-primary" type="submit">Save transaction</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="themeDialog" class="modal">
+    <div class="modal-card small-modal">
+      <div class="modal-head"><div><p class="eyebrow">Personalize</p><h3>Appearance</h3></div><button id="closeThemeDialog" class="icon-btn">×</button></div>
+      <div id="themeOptions" class="theme-options">
+        <button class="theme-option" data-theme="light"><span class="theme-preview light-preview"></span><strong>Clean Light</strong><small>White & graphite</small></button>
+        <button class="theme-option" data-theme="dark"><span class="theme-preview dark-preview"></span><strong>Clean Dark</strong><small>Black & soft gray</small></button>
+        <button class="theme-option" data-theme="lavender"><span class="theme-preview lavender-preview"></span><strong>Lavender Milk</strong><small>Soft violet & cream</small></button>
+        <button class="theme-option" data-theme="peach"><span class="theme-preview peach-preview"></span><strong>Peach Soda</strong><small>Peach & rose</small></button>
+        <button class="theme-option" data-theme="mint"><span class="theme-preview mint-preview"></span><strong>Mint Cloud</strong><small>Mint & sky</small></button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
