@@ -150,7 +150,7 @@
             <div><p class="eyebrow">Ledger</p><h3>All transactions</h3></div>
             <div class="filters">
               <input id="searchTransactions" type="search" placeholder="Search notes or category" />
-              <select id="transactionTypeFilter"><option value="all">All types</option><option value="income">Income</option><option value="expense">Expense</option></select>
+              <select id="transactionTypeFilter"><option value="all">All types</option><option value="income">Income</option><option value="expense">Expense</option><option value="transfer">Transfer</option></select>
             </div>
           </div>
           <div id="allTransactions" class="transaction-list large"></div>
@@ -196,16 +196,17 @@
         <button id="closeTransactionDialog" class="icon-btn" type="button">×</button>
       </div>
       <input id="transactionId" type="hidden" />
-      <div class="type-toggle" id="transactionTypeToggle">
+      <div class="type-toggle cols-3" id="transactionTypeToggle">
         <button type="button" class="active expense" data-type="expense">Expense</button>
         <button type="button" data-type="income">Income</button>
+        <button type="button" data-type="transfer">Transfer</button>
       </div>
       <div class="form-grid">
         <label class="full"><span>Amount (THB)</span><input id="transactionAmount" type="number" step="0.01" min="0.01" required placeholder="0.00" /></label>
         <label><span>Date</span><input id="transactionDate" type="date" required /></label>
         <label><span>Time</span><input id="transactionTime" type="time" required /></label>
-        <label class="full"><span>Category</span><select id="transactionCategory" required></select></label>
-        <label class="full"><span>Note</span><input id="transactionNote" maxlength="120" placeholder="Optional note" /></label>
+        <label class="full" id="transactionCategoryField"><span>Category</span><select id="transactionCategory" required></select></label>
+        <label class="full"><span>Note</span><input id="transactionNote" maxlength="120" placeholder="e.g. Savings to wallet" /></label>
       </div>
       <div class="modal-actions">
         <button id="deleteTransactionButton" class="btn btn-danger hidden" type="button">Delete</button>
